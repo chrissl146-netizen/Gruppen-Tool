@@ -589,10 +589,24 @@
             });
             alert(`Strukturdaten für ${nameToSave} erfolgreich gesichert.`);
             
+            const newClassData = {
+                id: nameToSave,
+                schueler: [...currentStudents],
+                settings: currentSettings
+            };
+
+            const existingIndex = savedClassesList.findIndex(c => c.id === nameToSave);
+            if (existingIndex > -1) {
+                savedClassesList[existingIndex] = newClassData;
+            } else {
+                savedClassesList.push(newClassData);
+            }
+            
             nameInput.value = "";
             activeClassName = nameToSave;
             document.getElementById("presentationTitle").innerText = `Visualisierung: ${nameToSave}`;
             
+            renderClassListUI();
             await fetchClassesFromFirestore();
         } catch (e) {
             console.error("Fehler beim Speichervorgang: ", e);
@@ -605,11 +619,15 @@
 
         try {
             await deleteDoc(doc(db, "klassen", activeClassName));
+            
+            savedClassesList = savedClassesList.filter(c => c.id !== activeClassName);
+            
             activeClassName = "";
             currentStudents = [];
             document.getElementById("presentationTitle").innerText = "Visualisierung";
             document.getElementById("newClassNameInput").value = "";
             renderStudentListUI();
+            renderClassListUI();
             await fetchClassesFromFirestore();
         } catch (e) {
             console.error("Fehler beim Löschen: ", e);
