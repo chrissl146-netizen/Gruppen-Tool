@@ -19,17 +19,19 @@
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
-        [data-theme="dark"] {
-            --bg-color: #111827;
-            --card-bg: #1f2937;
-            --text-color: #f3f4f6;
-            --text-muted: #9ca3af;
-            --border-color: #374151;
-            --primary: #34d399;
-            --primary-hover: #10b981;
-            --accent: #60a5fa;
-            --danger: #f87171;
-            --danger-hover: #ef4444;
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #111827;
+                --card-bg: #1f2937;
+                --text-color: #f3f4f6;
+                --text-muted: #9ca3af;
+                --border-color: #374151;
+                --primary: #34d399;
+                --primary-hover: #10b981;
+                --accent: #60a5fa;
+                --danger: #f87171;
+                --danger-hover: #ef4444;
+            }
         }
 
         * {
@@ -64,12 +66,6 @@
         h1 {
             font-size: 1.8rem;
             font-weight: 600;
-        }
-
-        .header-controls {
-            display: flex;
-            gap: 12px;
-            align-items: center;
         }
 
         .main-layout {
@@ -214,17 +210,6 @@
             gap: 8px;
         }
 
-        .gender-badge {
-            font-size: 0.75rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-
-        .gender-w { background-color: #fbcfe8; color: #9d174d; }
-        .gender-m { background-color: #bfdbfe; color: #1e40af; }
-        .gender-d { background-color: #e9d5ff; color: #6b21a8; }
-
         .remove-btn {
             background: none;
             border: none;
@@ -317,10 +302,6 @@
             grid-template-columns: 320px 1fr;
         }
 
-        :fullscreen #fullscreenTimerWrapper {
-            display: none;
-        }
-
         :fullscreen.timer-active #fullscreenTimerWrapper {
             display: flex;
             flex-direction: column;
@@ -374,26 +355,38 @@
         }
 
         .class-list-container {
-            max-height: 200px;
+            max-height: 220px;
             overflow-y: auto;
             border: 1px solid var(--border-color);
             border-radius: 6px;
             margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 6px;
         }
 
-        .class-list-item {
-            padding: 10px;
+        .class-btn {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-color);
+            text-align: left;
+            font-weight: 500;
             cursor: pointer;
-            border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.2s;
+            transition: all 0.2s;
         }
 
-        .class-list-item:hover {
-            background-color: var(--border-color);
+        .class-btn:hover {
+            background-color: var(--bg-color);
+            border-color: var(--accent);
         }
 
-        .class-list-item.active {
+        .class-btn.active {
             background-color: var(--accent);
+            border-color: var(--accent);
             color: white;
         }
 
@@ -447,10 +440,7 @@
 
 <div class="app-container">
     <header>
-        <h1>Differentiierte Gruppen- & Phasensteuerung</h1>
-        <div class="header-controls no-print">
-            <button class="btn" id="themeToggleBtn" onclick="toggleTheme()">Substrat-Modus</button>
-        </div>
+        <h1>Differenzierte Gruppen- & Phasensteuerung</h1>
     </header>
 
     <div class="main-layout">
@@ -500,14 +490,6 @@
                 </div>
 
                 <div class="switch-container">
-                    <label for="genderBalanceToggle">Homogene Geschlechterverteilung</label>
-                    <label class="switch">
-                        <input type="checkbox" id="genderBalanceToggle" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="switch-container">
                     <label for="historyAvoidanceToggle">Historienkonflikte blockieren</label>
                     <label class="switch">
                         <input type="checkbox" id="historyAvoidanceToggle" checked>
@@ -536,18 +518,13 @@
                         <label for="singleStudentNameInput">Einzelner Eintrag:</label>
                         <div class="input-row">
                             <input type="text" id="singleStudentNameInput" placeholder="Name, Vorname">
-                            <select id="genderSelect" style="width: 80px;">
-                                <option value="w">W</option>
-                                <option value="m" selected>M</option>
-                                <option value="d">D</option>
-                            </select>
                             <button class="btn" onclick="addSingleStudent()">+</button>
                         </div>
                     </div>
 
                     <div class="control-group">
-                        <label for="bulkPasteArea">Tabellen-Import (Spalten: Name | Geschlecht):</label>
-                        <textarea id="bulkPasteArea" placeholder="Mustermann, Max&#9;m&#10;Musterfrau, Erika&#9;w" oninput="parseExcelInput()"></textarea>
+                        <label for="bulkPasteArea">Tabellen-Import (Spalte: Name):</label>
+                        <textarea id="bulkPasteArea" placeholder="Mustermann, Max&#10;Musterfrau, Erika" oninput="parseExcelInput()"></textarea>
                     </div>
 
                     <div class="card-title" style="font-size: 1rem; margin-bottom: 8px;">
@@ -665,23 +642,38 @@
         }
 
         savedClassesList.forEach(cls => {
-            const item = document.createElement("div");
-            item.className = `class-list-item ${activeClassName === cls.id ? 'active' : ''}`;
-            item.innerText = `${cls.id} (${cls.schueler ? cls.schueler.length : 0} Personen)`;
-            item.onclick = () => selectAndLoadClass(cls.id);
-            container.appendChild(item);
+            const button = document.createElement("button");
+            button.className = `class-btn ${activeClassName === cls.id ? 'active' : ''}`;
+            button.innerText = `${cls.id} (${cls.schueler ? cls.schueler.length : 0} Personen)`;
+            button.onclick = () => selectAndLoadClass(cls.id);
+            container.appendChild(button);
         });
     }
 
     async function selectAndLoadClass(id) {
         activeClassName = id;
         const selected = savedClassesList.find(c => c.id === id);
-        if (selected && selected.schueler) {
-            currentStudents = [...selected.schueler];
+        
+        if (selected) {
+            currentStudents = selected.schueler ? [...selected.schueler] : [];
             document.getElementById("presentationTitle").innerText = `Visualisierungsmatrix: Klasse ${id}`;
+            
+            // Rekonstruktion der letzten Einstellungen
+            if (selected.settings) {
+                const mode = selected.settings.splitMode || 'count';
+                const radioToCheck = document.querySelector(`input[name="splitMode"][value="${mode}"]`);
+                if (radioToCheck) radioToCheck.checked = true;
+                
+                document.getElementById("groupCountInput").value = selected.settings.groupCount || 4;
+                document.getElementById("groupSizeInput").value = selected.settings.groupSize || 4;
+                document.getElementById("historyAvoidanceToggle").checked = selected.settings.historyAvoidance !== false;
+                
+                toggleModeInputs();
+            }
         } else {
             currentStudents = [];
         }
+        
         renderStudentListUI();
         renderClassListUI();
     }
@@ -696,10 +688,16 @@
         renderStudentListUI();
         
         try {
-            await setDoc(doc(db, "klassen", name), { schueler: [] });
+            const defaultSettings = {
+                splitMode: 'count',
+                groupCount: 4,
+                groupSize: 4,
+                historyAvoidance: true
+            };
+            await setDoc(doc(db, "klassen", name), { schueler: [], settings: defaultSettings });
             input.value = "";
             await fetchClassesFromFirestore();
-            selectAndLoadClass(name);
+            await selectAndLoadClass(name);
         } catch (e) {
             console.error("Klasse konnte nicht angelegt werden: ", e);
         }
@@ -710,10 +708,28 @@
             alert("Bitte wählen oder erstellen Sie zuerst eine Zielklasse in der linken Spalte.");
             return;
         }
+
+        const currentSettings = {
+            splitMode: document.querySelector('input[name="splitMode"]:checked').value,
+            groupCount: parseInt(document.getElementById("groupCountInput").value) || 4,
+            groupSize: parseInt(document.getElementById("groupSizeInput").value) || 4,
+            historyAvoidance: document.getElementById("historyAvoidanceToggle").checked
+        };
+
         try {
-            await setDoc(doc(db, "klassen", activeClassName), { schueler: currentStudents });
-            alert(`Klassendaten für ${activeClassName} erfolgreich im Cloud-Speicher gesichert.`);
+            await setDoc(doc(db, "klassen", activeClassName), { 
+                schueler: currentStudents,
+                settings: currentSettings
+            });
+            alert(`Klassendaten und Einstellungen für ${activeClassName} erfolgreich im Cloud-Speicher gesichert.`);
             await fetchClassesFromFirestore();
+            // Erneutes Laden stellt die Synchronität der UI sicher
+            const selected = savedClassesList.find(c => c.id === activeClassName);
+            if (selected) {
+                selected.schueler = [...currentStudents];
+                selected.settings = currentSettings;
+            }
+            renderClassListUI();
         } catch (e) {
             console.error("Fehler bei der Datenkommitierung: ", e);
         }
@@ -738,15 +754,13 @@
     // Schüler-Verwaltungslogik
     function addSingleStudent() {
         const nameInput = document.getElementById("singleStudentNameInput");
-        const genderSelect = document.getElementById("genderSelect");
         const name = nameInput.value.trim();
         
         if (!name) return;
         
         currentStudents.push({
             id: 'std_' + Math.random().toString(36).substr(2, 9),
-            name: name,
-            gender: genderSelect.value
+            name: name
         });
 
         nameInput.value = "";
@@ -760,21 +774,10 @@
 
         const lines = content.split('\n');
         lines.forEach(line => {
-            const parts = line.split('\t');
-            if (parts[0] && parts[0].trim()) {
-                let name = parts[0].trim();
-                let gender = 'm';
-                
-                if (parts[1]) {
-                    const gIndicator = parts[1].trim().toLowerCase();
-                    if (gIndicator === 'w' || gIndicator === 'f' || gIndicator === 'weiblich') gender = 'w';
-                    else if (gIndicator === 'd' || gIndicator === 'divers') gender = 'd';
-                }
-
+            if (line && line.trim()) {
                 currentStudents.push({
                     id: 'std_' + Math.random().toString(36).substr(2, 9),
-                    name: name,
-                    gender: gender
+                    name: line.trim()
                 });
             }
         });
@@ -800,15 +803,10 @@
             
             const info = document.createElement("div");
             info.className = "student-info";
-            
-            const badge = document.createElement("span");
-            badge.className = `gender-badge gender-${s.gender}`;
-            badge.innerText = s.gender.toUpperCase();
 
             const nameText = document.createElement("span");
             nameText.innerText = s.name;
 
-            info.appendChild(badge);
             info.appendChild(nameText);
 
             const removeBtn = document.createElement("button");
@@ -842,7 +840,6 @@
         }
 
         const mode = document.querySelector('input[name="splitMode"]:checked').value;
-        const balanceGender = document.getElementById("genderBalanceToggle").checked;
         const useHistory = document.getElementById("historyAvoidanceToggle").checked;
 
         let numGroups = 1;
@@ -858,28 +855,12 @@
 
         // Iterative Optimierungsschleife zur Vermeidung von historischen Konstellationen
         for (let attempt = 0; attempt < 50; attempt++) {
-            let pools = { w: [], m: [], d: [] };
-            currentStudents.forEach(s => pools[s.gender].push(s));
-            
-            // Shuffeln der Subpools
-            Object.keys(pools).forEach(k => pools[k].sort(() => Math.random() - 0.5));
-
+            let allShuffled = [...currentStudents].sort(() => Math.random() - 0.5);
             let allocation = Array.from({ length: numGroups }, () => []);
 
-            if (balanceGender) {
-                let currentGroupIdx = 0;
-                ['w', 'm', 'd'].forEach(g => {
-                    pools[g].forEach(student => {
-                        allocation[currentGroupIdx].push(student);
-                        currentGroupIdx = (currentGroupIdx + 1) % numGroups;
-                    });
-                });
-            } else {
-                let allShuffled = [...currentStudents].sort(() => Math.random() - 0.5);
-                allShuffled.forEach((student, idx) => {
-                    allocation[idx % numGroups].push(student);
-                });
-            }
+            allShuffled.forEach((student, idx) => {
+                allocation[idx % numGroups].push(student);
+            });
 
             let penalty = 0;
             if (useHistory && groupHistory.length > 0) {
@@ -1011,7 +992,6 @@
 
         const percent = timerTotalDurationSeconds > 0 ? (timerRemainingSeconds / timerTotalDurationSeconds) * 100 : 0;
         
-        // Dynamische Ringanpassung
         const circumference = 565.48;
         const offset = circumference - (percent / 100) * circumference;
         
@@ -1021,7 +1001,6 @@
         mainRing.style.strokeDashoffset = offset;
         fsRing.style.strokeDashoffset = offset;
 
-        // Farbmodulation von Grün zu Rot basierend auf der Zeitreizintensität
         const factor = 1 - (percent / 100);
         const r = Math.round(16 + (239 - 16) * factor);
         const g = Math.round(185 + (68 - 185) * factor);
@@ -1032,7 +1011,6 @@
         fsRing.style.stroke = colorString;
     }
 
-    // Intermittierendes akustisches Signal über die Web Audio API für unruhige Umgebungen
     function triggerAudioAlert() {
         try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -1052,7 +1030,6 @@
                 osc.stop(ctx.currentTime + start + duration);
             };
 
-            // Signalstruktur: Drei prägnante Doppelpieptöne
             for (let i = 0; i < 3; i++) {
                 let baseStart = i * 0.7;
                 playTone(880, baseStart, 0.15);      
@@ -1063,7 +1040,6 @@
         }
     }
 
-    // Vollbildsteuerung
     function toggleFullscreen() {
         const zone = document.getElementById("presentationZone");
         if (!document.fullscreenElement) {
@@ -1075,27 +1051,7 @@
         }
     }
 
-    // Farbmodus-Umschaltung
-    function toggleTheme() {
-        const current = document.body.getAttribute("data-theme");
-        if (current === "dark") {
-            document.body.removeAttribute("data-theme");
-            document.getElementById("themeToggleBtn").innerText = "Dunkel-Modus";
-        } else {
-            document.body.setAttribute("data-theme", "dark");
-            document.getElementById("themeToggleBtn").innerText = "Hell-Modus";
-        }
-    }
-
-    // Event-Listener zur Überwachung des Vollbild-Status zwecks UI-Synchronisation
-    document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) {
-            // Beim Verlassen wird die Ansicht automatisch bereinigt
-        }
-    });
-
     // Globale Registrierung der Funktionen für die HTML-Schnittstellen
-    window.toggleTheme = toggleTheme;
     window.createNewClass = createNewClass;
     window.saveCurrentClassToFirebase = saveCurrentClassToFirebase;
     window.deleteCurrentClassFromFirebase = deleteCurrentClassFromFirebase;
