@@ -552,31 +552,24 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc, getDocs, collection, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
-    // PLATZHALTER CONFIG - Muss vom Nutzer ersetzt werden falls echte Cloud-Speicherung gewünscht ist.
-    // Funktioniert aktuell über LocalStorage Fallback, wenn Firebase Config leer ist oder fehlschlägt.
     const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyAM1ToGpHGNzeM3qopEejMI2fyyCZZy_eM",
+      authDomain: "gruppeneinteilung-649ee.firebaseapp.com",
+      projectId: "gruppeneinteilung-649ee",
+      storageBucket: "gruppeneinteilung-649ee.firebasestorage.app",
+      messagingSenderId: "968582903146",
+      appId: "1:968582903146:web:32cf13b7bf3d0aa2a72113",
+      measurementId: "G-S6NKYWE3HD"
     };
 
-    let app, db;
-    let useFirebase = false;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const analytics = getAnalytics(app);
+    const useFirebase = true;
 
-    try {
-        if(firebaseConfig.apiKey !== "YOUR_API_KEY") {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            useFirebase = true;
-            console.log("Firebase initialized");
-        }
-    } catch(e) {
-        console.warn("Firebase Initialisierung fehlgeschlagen. Nutze LocalStorage als Fallback.", e);
-    }
+    console.log("Firebase & Analytics erfolgreich initialisiert.");
 
     // --- STATE MANAGEMENT ---
     let classes = []; // Array von Objekten
