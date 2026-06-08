@@ -72,7 +72,6 @@
             color: var(--text-color);
         }
 
-        /* Horizontale Leiste für gespeicherte Klassen ganz oben */
         .top-class-bar {
             margin-bottom: 24px;
         }
@@ -260,6 +259,13 @@
             font-size: 0.9rem;
             border: 1px solid var(--border-color);
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.15s;
+        }
+
+        .student-tag.inactive {
+            opacity: 0.4;
+            text-decoration: line-through;
+            background-color: var(--btn-gray);
         }
 
         .student-tag .remove-tag-btn {
@@ -433,8 +439,8 @@
                 </div>
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 8px;">
-                    <label style="margin-bottom: 0;">Eingetragene Schüler</label>
-                    <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-muted);" id="totalStudentCountDisplay">0 / 30</span>
+                    <label style="margin-bottom: 0;">Eingetragene Schüler (Klicken zum Deaktivieren)</label>
+                    <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-muted);" id="totalStudentCountDisplay">0 / 0 aktiv</span>
                 </div>
                 <div class="student-tags-container" id="activeStudentListWrapper"></div>
             </div>
@@ -510,6 +516,7 @@
             querySnapshot.forEach((doc) => {
                 savedClassesList.push({ id: doc.id, ...doc.data() });
             });
+            savedClassesList.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
             renderClassListUI();
         } catch (error) {
             console.error("Fehler beim Abruf der Cloud-Daten: ", error);
@@ -536,12 +543,16 @@
 
     async function selectAndLoadClass(id) {
         activeClassName = id;
-        const selected = savedClassesList.find(c => c.id === id);
-        
-        if (selected) {
+        try {
+            const snap = await getDoc(doc(db, "klassen", id));
+            if (!snap.exists()) return;
+
+            const selected = snap.data();
             currentStudents = selected.schueler ? [...selected.schueler] : [];
+            groupHistory = selected.history ? [...selected.history] : [];
+            
             document.getElementById("presentationTitle").innerText = `Visualisierung: ${id}`;
-            document.getElementById("newClassNameInput").value = "";
+            document.getElementById("newClassNameInput").value = id;
             
             if (selected.settings) {
                 const mode = selected.settings.splitMode || 'count';
@@ -553,12 +564,13 @@
                 
                 toggleModeInputs();
             }
-        } else {
-            currentStudents = [];
+
+            renderStudentListUI();
+            renderClassListUI();
+            document.getElementById("bulkPasteArea").value = "";
+        } catch (e) {
+            console.error("Fehler beim Laden der Klasse: ", e);
         }
-        
-        renderStudentListUI();
-        renderClassListUI();
     }
 
     async function saveCurrentClassToFirebase() {
@@ -584,30 +596,19 @@
 
         try {
             await setDoc(doc(db, "klassen", nameToSave), { 
+                name: nameToSave,
                 schueler: currentStudents,
-                settings: currentSettings
+                settings: currentSettings,
+                history: groupHistory,
+                updatedAt: Date.now()
             });
             alert(`Strukturdaten für ${nameToSave} erfolgreich gesichert.`);
             
-            const newClassData = {
-                id: nameToSave,
-                schueler: [...currentStudents],
-                settings: currentSettings
-            };
-
-            const existingIndex = savedClassesList.findIndex(c => c.id === nameToSave);
-            if (existingIndex > -1) {
-                savedClassesList[existingIndex] = newClassData;
-            } else {
-                savedClassesList.push(newClassData);
-            }
-            
-            nameInput.value = "";
-            activeClassName = nameToSave;
-            document.getElementById("presentationTitle").innerText = `Visualisierung: ${nameToSave}`;
-            
-            renderClassListUI();
             await fetchClassesFromFirestore();
+            activeClassName = nameToSave;
+            renderClassListUI();
+            
+            nameInput.value = nameToSave;
         } catch (e) {
             console.error("Fehler beim Speichervorgang: ", e);
         }
@@ -619,15 +620,11 @@
 
         try {
             await deleteDoc(doc(db, "klassen", activeClassName));
-            
-            savedClassesList = savedClassesList.filter(c => c.id !== activeClassName);
-            
             activeClassName = "";
             currentStudents = [];
             document.getElementById("presentationTitle").innerText = "Visualisierung";
             document.getElementById("newClassNameInput").value = "";
             renderStudentListUI();
-            renderClassListUI();
             await fetchClassesFromFirestore();
         } catch (e) {
             console.error("Fehler beim Löschen: ", e);
@@ -642,7 +639,8 @@
         
         currentStudents.push({
             id: 'std_' + Math.random().toString(36).substr(2, 9),
-            name: name
+            name: name,
+            active: true
         });
 
         nameInput.value = "";
@@ -659,7 +657,8 @@
             if (line && line.trim()) {
                 currentStudents.push({
                     id: 'std_' + Math.random().toString(36).substr(2, 9),
-                    name: line.trim()
+                    name: line.trim(),
+                    active: true
                 });
             }
         });
@@ -668,8 +667,11 @@
         renderStudentListUI();
     }
 
-    function removeStudent(id) {
-        currentStudents = currentStudents.filter(s => s.id !== id);
+    function toggleStudentActive(id) {
+        const student = currentStudents.find(s => s.id === id);
+        if (student) {
+            student.active = student.active !== false ? false : true;
+        }
         renderStudentListUI();
     }
 
@@ -677,25 +679,30 @@
         const container = document.getElementById("activeStudentListWrapper");
         const counter = document.getElementById("totalStudentCountDisplay");
         container.innerHTML = "";
-        counter.innerText = `${currentStudents.length} / 30`;
+        
+        const totalCount = currentStudents.length;
+        const activeCount = currentStudents.filter(s => s.active !== false).length;
+        counter.innerText = `${activeCount} / ${totalCount} aktiv`;
 
-        if (currentStudents.length === 0) {
+        if (totalCount === 0) {
             container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; padding: 4px;">Keine Schüler eingetragen</div>';
             return;
         }
 
         currentStudents.forEach(s => {
             const tag = document.createElement("div");
-            tag.className = "student-tag";
+            tag.className = `student-tag ${s.active === false ? 'inactive' : ''}`;
             
             const nameSpan = document.createElement("span");
+            nameSpan.style.cursor = "pointer";
             nameSpan.innerText = s.name;
+            nameSpan.onclick = () => toggleStudentActive(s.id);
             tag.appendChild(nameSpan);
 
             const removeBtn = document.createElement("button");
             removeBtn.className = "remove-tag-btn";
             removeBtn.innerHTML = "&times;";
-            removeBtn.onclick = () => removeStudent(s.id);
+            removeBtn.onclick = () => toggleStudentActive(s.id);
             tag.appendChild(removeBtn);
 
             container.appendChild(tag);
@@ -714,8 +721,10 @@
     }
 
     function generateOptimizedGroups() {
-        if (currentStudents.length === 0) {
-            alert("Es befinden sich keine Personen im aktiven Datensatz.");
+        const activeStudents = currentStudents.filter(s => s.active !== false);
+
+        if (activeStudents.length === 0) {
+            alert("Es befinden sich keine aktiven Personen im aktuellen Datensatz.");
             return;
         }
 
@@ -726,14 +735,14 @@
             numGroups = parseInt(document.getElementById("groupCountInput").value) || 1;
         } else {
             const targetSize = parseInt(document.getElementById("groupSizeInput").value) || 1;
-            numGroups = Math.max(1, Math.round(currentStudents.length / targetSize));
+            numGroups = Math.max(1, Math.round(activeStudents.length / targetSize));
         }
 
         let bestAllocation = null;
         let lowestPenalty = Infinity;
 
         for (let attempt = 0; attempt < 30; attempt++) {
-            let allShuffled = [...currentStudents].sort(() => Math.random() - 0.5);
+            let allShuffled = [...activeStudents].sort(() => Math.random() - 0.5);
             let allocation = Array.from({ length: numGroups }, () => []);
 
             allShuffled.forEach((student, idx) => {
@@ -818,7 +827,7 @@
     window.clearHistory = clearHistory;
     window.addSingleStudent = addSingleStudent;
     window.parseExcelInput = parseExcelInput;
-    window.removeStudent = removeStudent;
+    window.toggleStudentActive = toggleStudentActive;
     window.toggleFullscreen = toggleFullscreen;
 
     fetchClassesFromFirestore();
