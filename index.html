@@ -11,11 +11,14 @@
             --text-color: #1f2937;
             --text-muted: #4b5563;
             --border-color: #e5e7eb;
-            --primary: #10b981;
-            --primary-hover: #059669;
+            --primary: #009688;
+            --primary-hover: #00796b;
             --accent: #3b82f6;
             --danger: #ef4444;
             --danger-hover: #dc2626;
+            --btn-gray: #e8eaed;
+            --btn-gray-text: #3c4043;
+            --btn-gray-hover: #dadce0;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
@@ -26,11 +29,14 @@
                 --text-color: #f3f4f6;
                 --text-muted: #9ca3af;
                 --border-color: #374151;
-                --primary: #34d399;
-                --primary-hover: #10b981;
+                --primary: #26a69a;
+                --primary-hover: #009688;
                 --accent: #60a5fa;
                 --danger: #f87171;
                 --danger-hover: #ef4444;
+                --btn-gray: #374151;
+                --btn-gray-text: #f3f4f6;
+                --btn-gray-hover: #4b5563;
             }
         }
 
@@ -124,6 +130,7 @@
         .input-row {
             display: flex;
             gap: 8px;
+            align-items: center;
         }
 
         input[type="text"], input[type="number"], textarea, select {
@@ -143,7 +150,7 @@
         }
 
         textarea {
-            height: 120px;
+            height: 100px;
             resize: vertical;
             font-family: inherit;
         }
@@ -184,38 +191,55 @@
             background-color: var(--danger-hover);
         }
 
-        .student-list-container {
-            max-height: 250px;
-            overflow-y: auto;
+        .btn-gray {
+            background-color: var(--btn-gray);
+            color: var(--btn-gray-text);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-gray:hover {
+            background-color: var(--btn-gray-hover);
+            opacity: 1;
+        }
+
+        .student-tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 12px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            margin-bottom: 12px;
+            background-color: var(--card-bg);
+            min-height: 80px;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
-        .student-item {
-            display: flex;
-            justify-content: space-between;
+        .student-tag {
+            display: inline-flex;
             align-items: center;
-            padding: 8px 12px;
-            border-bottom: 1px solid var(--border-color);
+            background-color: var(--btn-gray);
+            color: var(--btn-gray-text);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
         }
 
-        .student-item:last-child {
-            border-bottom: none;
-        }
-
-        .student-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .remove-btn {
+        .student-tag .remove-tag-btn {
             background: none;
             border: none;
-            color: var(--danger);
+            color: var(--text-muted);
+            margin-left: 8px;
             cursor: pointer;
             font-size: 1.1rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .student-tag .remove-tag-btn:hover {
+            color: var(--danger);
         }
 
         .radio-group {
@@ -313,38 +337,66 @@
 
         .groups-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 20px;
         }
 
         .group-card {
-            background-color: var(--card-bg);
-            border: 2px solid var(--border-color);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 18px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: transform 0.2s;
+        }
+
+        /* Farbige Gruppenkacheln aus dem Template */
+        .group-card.color-0 { background-color: #e6f4ea; border-color: #ceead6; color: #137333; }
+        .group-card.color-0 .group-header { border-bottom-color: #ceead6; color: #137333; }
+
+        .group-card.color-1 { background-color: #e8f0fe; border-color: #d2e3fc; color: #1a73e8; }
+        .group-card.color-1 .group-header { border-bottom-color: #d2e3fc; color: #1a73e8; }
+
+        .group-card.color-2 { background-color: #feefe3; border-color: #fedfc2; color: #b06000; }
+        .group-card.color-2 .group-header { border-bottom-color: #fedfc2; color: #b06000; }
+
+        .group-card.color-3 { background-color: #f3e8fd; border-color: #e9d2fd; color: #a042f4; }
+        .group-card.color-3 .group-header { border-bottom-color: #e9d2fd; color: #a042f4; }
+
+        /* Zyklische Wiederholungsfarben falls mehr als 4 Gruppen generiert werden */
+        .group-card.color-4 { background-color: #e1f5fe; border-color: #b3e5fc; color: #0288d1; }
+        .group-card.color-4 .group-header { border-bottom-color: #b3e5fc; color: #0288d1; }
+
+        @media (prefers-color-scheme: dark) {
+            .group-card.color-0 { background-color: #163820; border-color: #245732; color: #a8fab3; }
+            .group-card.color-0 .group-header { border-bottom-color: #245732; color: #a8fab3; }
+            .group-card.color-1 { background-color: #1a2b4c; border-color: #263d6d; color: #aecbfa; }
+            .group-card.color-1 .group-header { border-bottom-color: #263d6d; color: #aecbfa; }
+            .group-card.color-2 { background-color: #3d2511; border-color: #5c381a; color: #ffcb92; }
+            .group-card.color-2 .group-header { border-bottom-color: #5c381a; color: #ffcb92; }
+            .group-card.color-3 { background-color: #2e174d; border-color: #452373; color: #e8beff; }
+            .group-card.color-3 .group-header { border-bottom-color: #452373; color: #e8beff; }
+            .group-card.color-4 { background-color: #0d2e40; border-color: #17445c; color: #81d4fa; }
+            .group-card.color-4 .group-header { border-bottom-color: #17445c; color: #81d4fa; }
         }
 
         .group-header {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 600;
-            margin-bottom: 12px;
-            padding-bottom: 6px;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
             border-bottom: 2px solid var(--border-color);
-            color: var(--accent);
         }
 
         .group-member-item {
-            padding: 4px 0;
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.95rem;
+            padding: 5px 0;
+            font-size: 1rem;
+            font-weight: 500;
         }
 
         .history-list {
             list-style: none;
             font-size: 0.9rem;
-            max-height: 150px;
+            max-height: 120px;
             overflow-y: auto;
         }
 
@@ -425,8 +477,31 @@
             border-radius: 50%;
         }
 
-        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider { background-color: #009688; }
         input:checked + .slider:before { transform: translateX(24px); }
+
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .btn-row-space {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .flex-left {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
 
         @media print {
             .no-print { display: none !important; }
@@ -466,7 +541,7 @@
             </div>
 
             <div class="card">
-                <div class="card-title">Generierungsoptionen</div>
+                <div class="card-title">Einstellungsmatrix</div>
                 <div class="control-group">
                     <label>Einteilungsmodus:</label>
                     <div class="radio-group">
@@ -479,16 +554,6 @@
                     </div>
                 </div>
 
-                <div class="control-group" id="groupCountContainer">
-                    <label for="groupCountInput">Anzahl zu erstellender Gruppen:</label>
-                    <input type="number" id="groupCountInput" min="1" value="4">
-                </div>
-
-                <div class="control-group" id="groupSizeContainer" style="display: none;">
-                    <label for="groupSizeInput">Gewünschte Personenanzahl pro Team:</label>
-                    <input type="number" id="groupSizeInput" min="1" value="4">
-                </div>
-
                 <div class="switch-container">
                     <label for="historyAvoidanceToggle">Historienkonflikte blockieren</label>
                     <label class="switch">
@@ -496,10 +561,6 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-
-                <button class="btn btn-primary" style="width: 100%; margin-top: 12px; font-size: 1.05rem;" onclick="generateOptimizedGroups()">
-                    Gruppenzusammensetzung berechnen
-                </button>
             </div>
 
             <div class="card">
@@ -517,20 +578,20 @@
                     <div class="control-group">
                         <label for="singleStudentNameInput">Einzelner Eintrag:</label>
                         <div class="input-row">
-                            <input type="text" id="singleStudentNameInput" placeholder="Name, Vorname">
-                            <button class="btn" onclick="addSingleStudent()">+</button>
+                            <input type="text" id="singleStudentNameInput" placeholder="Vorname Nachname...">
+                            <button class="btn btn-primary" onclick="addSingleStudent()">+</button>
                         </div>
                     </div>
 
                     <div class="control-group">
                         <label for="bulkPasteArea">Tabellen-Import (Spalte: Name):</label>
-                        <textarea id="bulkPasteArea" placeholder="Mustermann, Max&#10;Musterfrau, Erika" oninput="parseExcelInput()"></textarea>
+                        <textarea id="bulkPasteArea" placeholder="Mustermann Max&#10;Musterfrau Erika" oninput="parseExcelInput()"></textarea>
                     </div>
 
-                    <div class="card-title" style="font-size: 1rem; margin-bottom: 8px;">
-                        Aktueller Datensatz (<span id="totalStudentCountDisplay">0</span> Personen)
+                    <div class="card-title" style="font-size: 1rem; margin-bottom: 12px; display: block; width: 100%;">
+                        Eingetragene Schüler <span style="float: right; font-weight: normal; color: var(--text-muted);" id="totalStudentCountDisplay">0 / 30</span>
                     </div>
-                    <div class="student-list-container" id="activeStudentListWrapper"></div>
+                    <div class="student-tags-container" id="activeStudentListWrapper"></div>
                 </div>
 
                 <div class="card" style="text-align: center;">
@@ -553,16 +614,44 @@
 
                     <div style="display: flex; gap: 8px; justify-content: center;">
                         <button class="btn btn-primary" onclick="startTimer()">Start</button>
-                        <button class="btn" onclick="pauseTimer()">Pause</button>
+                        <button class="btn btn-gray" onclick="pauseTimer()">Pause</button>
                         <button class="btn btn-danger" onclick="resetTimer()">Reset</button>
                     </div>
                 </div>
             </div>
 
+            <div class="card no-print">
+                <div class="card-title" style="font-size: 1.3rem; margin-bottom: 20px;">Gruppeneinteilung generieren</div>
+                
+                <div class="control-group" id="groupCountContainer">
+                    <label for="groupCountInput" style="font-size: 1rem; margin-bottom: 10px;">In wie viele Gruppen aufteilen?</label>
+                    <div class="input-row" style="max-width: 450px;">
+                        <input type="number" id="groupCountInput" min="1" value="5" style="max-width: 180px;">
+                        <button class="btn btn-primary" onclick="generateOptimizedGroups()">In Gruppen einteilen</button>
+                    </div>
+                </div>
+
+                <div class="control-group" id="groupSizeContainer" style="display: none;">
+                    <label for="groupSizeInput" style="font-size: 1rem; margin-bottom: 10px;">Gewünschte Personenanzahl pro Team:</label>
+                    <div class="input-row" style="max-width: 450px;">
+                        <input type="number" id="groupSizeInput" min="1" value="4" style="max-width: 180px;">
+                        <button class="btn btn-primary" onclick="generateOptimizedGroups()">In Gruppen einteilen</button>
+                    </div>
+                </div>
+
+                <div class="btn-row-space">
+                    <div class="flex-left">
+                        <button class="btn btn-gray" onclick="generateOptimizedGroups()">Neu würfeln</button>
+                        <button class="btn btn-gray" onclick="window.print()">Drucken</button>
+                        <button class="btn btn-gray" onclick="toggleFullscreen()">Vollbildmodus (Beamer)</button>
+                    </div>
+                    <button class="btn btn-danger" onclick="clearHistory()">Verlauf zurücksetzen</button>
+                </div>
+            </div>
+
             <div class="presentation-zone" id="presentationZone">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;" class="no-print">
-                    <div style="font-size: 1.2rem; font-weight: 600;" id="presentationTitle">Visualisierungsmatrix</div>
-                    <button class="btn" onclick="toggleFullscreen()">Vollbildmodus</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;" class="no-print">
+                    <div style="font-size: 1.3rem; font-weight: 600;" id="presentationTitle">Visualisierungsmatrix</div>
                 </div>
 
                 <div class="presentation-split">
@@ -664,7 +753,7 @@
                 const radioToCheck = document.querySelector(`input[name="splitMode"][value="${mode}"]`);
                 if (radioToCheck) radioToCheck.checked = true;
                 
-                document.getElementById("groupCountInput").value = selected.settings.groupCount || 4;
+                document.getElementById("groupCountInput").value = selected.settings.groupCount || 5;
                 document.getElementById("groupSizeInput").value = selected.settings.groupSize || 4;
                 document.getElementById("historyAvoidanceToggle").checked = selected.settings.historyAvoidance !== false;
                 
@@ -690,7 +779,7 @@
         try {
             const defaultSettings = {
                 splitMode: 'count',
-                groupCount: 4,
+                groupCount: 5,
                 groupSize: 4,
                 historyAvoidance: true
             };
@@ -711,7 +800,7 @@
 
         const currentSettings = {
             splitMode: document.querySelector('input[name="splitMode"]:checked').value,
-            groupCount: parseInt(document.getElementById("groupCountInput").value) || 4,
+            groupCount: parseInt(document.getElementById("groupCountInput").value) || 5,
             groupSize: parseInt(document.getElementById("groupSizeInput").value) || 4,
             historyAvoidance: document.getElementById("historyAvoidanceToggle").checked
         };
@@ -723,7 +812,6 @@
             });
             alert(`Klassendaten und Einstellungen für ${activeClassName} erfolgreich im Cloud-Speicher gesichert.`);
             await fetchClassesFromFirestore();
-            // Erneutes Laden stellt die Synchronität der UI sicher
             const selected = savedClassesList.find(c => c.id === activeClassName);
             if (selected) {
                 selected.schueler = [...currentStudents];
@@ -751,7 +839,7 @@
         }
     }
 
-    // Schüler-Verwaltungslogik
+    // Schüler-Verwaltungslogik mit Tags
     function addSingleStudent() {
         const nameInput = document.getElementById("singleStudentNameInput");
         const name = nameInput.value.trim();
@@ -795,28 +883,28 @@
         const container = document.getElementById("activeStudentListWrapper");
         const counter = document.getElementById("totalStudentCountDisplay");
         container.innerHTML = "";
-        counter.innerText = currentStudents.length;
+        counter.innerText = `${currentStudents.length} / 30`;
+
+        if (currentStudents.length === 0) {
+            container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; padding: 4px;">Keine Schüler eingetragen</div>';
+            return;
+        }
 
         currentStudents.forEach(s => {
-            const item = document.createElement("div");
-            item.className = "student-item";
+            const tag = document.createElement("div");
+            tag.className = "student-tag";
             
-            const info = document.createElement("div");
-            info.className = "student-info";
-
-            const nameText = document.createElement("span");
-            nameText.innerText = s.name;
-
-            info.appendChild(nameText);
+            const nameSpan = document.createElement("span");
+            nameSpan.innerText = s.name;
+            tag.appendChild(nameSpan);
 
             const removeBtn = document.createElement("button");
-            removeBtn.className = "remove-btn";
+            removeBtn.className = "remove-tag-btn";
             removeBtn.innerHTML = "&times;";
             removeBtn.onclick = () => removeStudent(s.id);
+            tag.appendChild(removeBtn);
 
-            item.appendChild(info);
-            item.appendChild(removeBtn);
-            container.appendChild(item);
+            container.appendChild(tag);
         });
     }
 
@@ -853,7 +941,6 @@
         let bestAllocation = null;
         let lowestPenalty = Infinity;
 
-        // Iterative Optimierungsschleife zur Vermeidung von historischen Konstellationen
         for (let attempt = 0; attempt < 50; attempt++) {
             let allShuffled = [...currentStudents].sort(() => Math.random() - 0.5);
             let allocation = Array.from({ length: numGroups }, () => []);
@@ -885,7 +972,6 @@
             }
         }
 
-        // Sicherung der Konstellation im Historien-Gedächtnis
         bestAllocation.forEach(g => {
             if (g.length > 1) groupHistory.push([...g]);
         });
@@ -900,11 +986,13 @@
 
         groups.forEach((group, index) => {
             const card = document.createElement("div");
-            card.className = "group-card";
+            // Verwendung des zyklischen Farbschemas aus dem CSS (0 bis 4)
+            const colorIndex = index % 5;
+            card.className = `group-card color-${colorIndex}`;
             
             const header = document.createElement("div");
             header.className = "group-header";
-            header.innerText = `Team ${index + 1}`;
+            header.innerText = `Gruppe ${index + 1}`;
             card.appendChild(header);
 
             group.forEach(member => {
@@ -926,7 +1014,7 @@
         groupHistory.forEach(g => {
             const item = document.createElement("li");
             item.className = "history-item";
-            item.innerText = `Kombination ${counter++}: ${g.map(p => p.name.split(',')[0]).join(' & ')}`;
+            item.innerText = `Kombination ${counter++}: ${g.map(p => p.name.split(' ')[0]).join(' & ')}`;
             log.appendChild(item);
         });
     }
@@ -936,7 +1024,7 @@
         updateHistoryLogUI();
     }
 
-    // Timer-Modul mit synchronisierter Weiterschaltung für den Vollbildmodus
+    // Timer-Modul
     function startTimer() {
         if (!isTimerPaused) return;
 
@@ -1000,15 +1088,6 @@
         
         mainRing.style.strokeDashoffset = offset;
         fsRing.style.strokeDashoffset = offset;
-
-        const factor = 1 - (percent / 100);
-        const r = Math.round(16 + (239 - 16) * factor);
-        const g = Math.round(185 + (68 - 185) * factor);
-        const b = Math.round(129 + (68 - 129) * factor);
-        const colorString = `rgb(${r}, ${g}, ${b})`;
-
-        mainRing.style.stroke = colorString;
-        fsRing.style.stroke = colorString;
     }
 
     function triggerAudioAlert() {
