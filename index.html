@@ -389,7 +389,6 @@
                     <label for="newClassNameInput">Klassenname:</label>
                     <div class="input-row">
                         <input type="text" id="newClassNameInput" placeholder="z. B. Klasse_3">
-                        <button class="btn btn-primary" onclick="createNewClass()">+ neue Klasse</button>
                     </div>
                 </div>
 
@@ -542,6 +541,7 @@
         if (selected) {
             currentStudents = selected.schueler ? [...selected.schueler] : [];
             document.getElementById("presentationTitle").innerText = `Visualisierung: ${id}`;
+            document.getElementById("newClassNameInput").value = "";
             
             if (selected.settings) {
                 const mode = selected.settings.splitMode || 'count';
@@ -561,33 +561,18 @@
         renderClassListUI();
     }
 
-    async function createNewClass() {
-        const input = document.getElementById("newClassNameInput");
-        const name = input.value.trim();
-        if (!name) return;
-
-        activeClassName = name;
-        currentStudents = [];
-        renderStudentListUI();
-        
-        try {
-            const defaultSettings = {
-                splitMode: 'count',
-                groupCount: 5,
-                groupSize: 4
-            };
-            await setDoc(doc(db, "klassen", name), { schueler: [], settings: defaultSettings });
-            input.value = "";
-            await fetchClassesFromFirestore();
-            await selectAndLoadClass(name);
-        } catch (e) {
-            console.error("Klasse konnte nicht erstellt werden: ", e);
-        }
-    }
-
     async function saveCurrentClassToFirebase() {
-        if (!activeClassName) {
-            alert("Bitte wählen oder erstellen Sie zuerst eine Klasse.");
+        const nameInput = document.getElementById("newClassNameInput");
+        const typedName = nameInput.value.trim();
+        let nameToSave = typedName || activeClassName;
+
+        if (!nameToSave) {
+            alert("Bitte geben Sie einen Klassennamen ein oder wählen Sie eine bestehende Klasse aus.");
+            return;
+        }
+
+        if (currentStudents.length < 2) {
+            alert("Eine Klasse kann erst ab mindestens 2 eingetragenen Schülern gespeichert werden.");
             return;
         }
 
@@ -598,18 +583,17 @@
         };
 
         try {
-            await setDoc(doc(db, "klassen", activeClassName), { 
+            await setDoc(doc(db, "klassen", nameToSave), { 
                 schueler: currentStudents,
                 settings: currentSettings
             });
-            alert(`Strukturdaten für ${activeClassName} erfolgreich gesichert.`);
+            alert(`Strukturdaten für ${nameToSave} erfolgreich gesichert.`);
+            
+            nameInput.value = "";
+            activeClassName = nameToSave;
+            document.getElementById("presentationTitle").innerText = `Visualisierung: ${nameToSave}`;
+            
             await fetchClassesFromFirestore();
-            const selected = savedClassesList.find(c => c.id === activeClassName);
-            if (selected) {
-                selected.schueler = [...currentStudents];
-                selected.settings = currentSettings;
-            }
-            renderClassListUI();
         } catch (e) {
             console.error("Fehler beim Speichervorgang: ", e);
         }
@@ -624,6 +608,7 @@
             activeClassName = "";
             currentStudents = [];
             document.getElementById("presentationTitle").innerText = "Visualisierung";
+            document.getElementById("newClassNameInput").value = "";
             renderStudentListUI();
             await fetchClassesFromFirestore();
         } catch (e) {
@@ -808,7 +793,6 @@
         }
     }
 
-    window.createNewClass = createNewClass;
     window.saveCurrentClassToFirebase = saveCurrentClassToFirebase;
     window.deleteCurrentClassFromFirebase = deleteCurrentClassFromFirebase;
     window.toggleModeInputs = toggleModeInputs;
