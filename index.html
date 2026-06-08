@@ -72,6 +72,46 @@
             color: var(--text-color);
         }
 
+        /* Horizontale Leiste für gespeicherte Klassen ganz oben */
+        .top-class-bar {
+            margin-bottom: 24px;
+        }
+
+        .class-list-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            min-height: 56px;
+            align-items: center;
+        }
+
+        .class-btn {
+            padding: 10px 16px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-color);
+            text-align: center;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .class-btn:hover {
+            background-color: var(--btn-gray-hover);
+        }
+
+        .class-btn.active {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
         .main-layout {
             display: grid;
             grid-template-columns: 1fr;
@@ -180,40 +220,6 @@
 
         .btn-gray:hover {
             background-color: var(--btn-gray-hover);
-        }
-
-        .class-list-container {
-            max-height: 240px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            margin-top: 12px;
-            padding: 4px;
-            background-color: var(--bg-color);
-        }
-
-        .class-btn {
-            width: 100%;
-            padding: 10px 12px;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            color: var(--text-color);
-            text-align: left;
-            font-weight: 500;
-            cursor: pointer;
-            margin-bottom: 4px;
-            transition: all 0.15s;
-        }
-
-        .class-btn:hover {
-            background-color: var(--btn-gray-hover);
-        }
-
-        .class-btn.active {
-            background-color: var(--accent);
-            border-color: var(--accent);
-            color: white;
         }
 
         .radio-group {
@@ -371,6 +377,10 @@
         <h1>School-Tool: Gruppeneinteiler</h1>
     </header>
 
+    <div class="top-class-bar no-print">
+        <div class="class-list-container" id="firebaseClassList"></div>
+    </div>
+
     <div class="main-layout">
         <div class="no-print">
             <div class="card">
@@ -382,9 +392,6 @@
                         <button class="btn btn-primary" onclick="createNewClass()">+ neue Klasse</button>
                     </div>
                 </div>
-                
-                <label>Gespeicherte Klassen:</label>
-                <div class="class-list-container" id="firebaseClassList"></div>
 
                 <div style="margin-top: 16px; display: flex; gap: 8px;">
                     <button class="btn btn-primary" style="flex: 1;" onclick="saveCurrentClassToFirebase()">Speichern</button>
@@ -515,14 +522,14 @@
         container.innerHTML = "";
         
         if (savedClassesList.length === 0) {
-            container.innerHTML = '<div style="padding: 10px; color: var(--text-muted); font-size: 0.9rem;">Keine Klassen hinterlegt</div>';
+            container.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem; padding: 4px;">Keine Klassen in der Cloud hinterlegt</span>';
             return;
         }
 
         savedClassesList.forEach(cls => {
             const button = document.createElement("button");
             button.className = `class-btn ${activeClassName === cls.id ? 'active' : ''}`;
-            button.innerText = `${cls.id} (${cls.schueler ? cls.schueler.length : 0} Schüler)`;
+            button.innerText = `${cls.id} (${cls.schueler ? cls.schueler.length : 0} Sch.)`;
             button.onclick = () => selectAndLoadClass(cls.id);
             container.appendChild(button);
         });
