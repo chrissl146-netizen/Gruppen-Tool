@@ -37,6 +37,10 @@
         
         .main-grid { display: grid; grid-template-columns: 400px 1fr; gap: 24px; }
         @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
+
+        .timer-section { margin-bottom: 24px; }
+        .timer-card { background-color: var(--card-bg); border: 2px solid var(--primary); border-radius: 8px; padding: 30px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .timer-card .card-title { color: var(--primary); border-color: var(--primary); }
         
         .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 24px; }
         .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
@@ -113,7 +117,25 @@
         <button class="btn btn-primary" onclick="showNewClassModal()">+ Neue Klasse</button>
     </div>
 
-    <div class="main-grid">
+    <!-- Timer als separate Kachel -->
+    <div class="timer-section">
+        <div class="timer-card">
+            <div class="card-title">⏱️ Phasentimer</div>
+            <div style="margin-bottom: 20px; margin-top: 15px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 500; font-size: 0.95rem;">Zeit (Minuten):</label>
+                <input type="number" id="timerInput" value="5" min="0" max="120" style="width:100%; margin-bottom:15px;" onchange="updateTimerFromInput()">
+            </div>
+            <div class="timer-display" id="timerDisplay">05:00</div>
+            <div class="timer-controls">
+                <button class="btn btn-primary" id="startStopBtn" onclick="toggleTimer()">Start</button>
+                <button class="btn btn-primary" onclick="pauseTimer()">Pause</button>
+                <button class="btn btn-primary" onclick="resetTimer()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hauptbereich für Klassenverwaltung und Gruppen -->
+
         <!-- Spalte 1: Klassenverwaltung, Schüler, Einstellungen -->
         <div>
             <div class="card" id="classManagementCard" style="display:none;">
@@ -148,20 +170,6 @@
             <div class="card" id="groupsCard" style="display:none;">
                 <div class="card-title">Gruppenansicht</div>
                 <div id="groupsOutput" class="no-data">Noch keine Gruppen erstellt.</div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">Phasentimer</div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Zeit (Minuten):</label>
-                    <input type="number" id="timerInput" value="5" min="0" max="120" style="width:100%; margin-bottom:10px;" onchange="updateTimerFromInput()">
-                </div>
-                <div class="timer-display" id="timerDisplay">05:00</div>
-                <div class="timer-controls">
-                    <button class="btn btn-primary" id="startStopBtn" onclick="toggleTimer()">Start</button>
-                    <button class="btn btn-primary" onclick="pauseTimer()">Pause</button>
-                    <button class="btn btn-primary" onclick="resetTimer()">Reset</button>
-                </div>
             </div>
         </div>
     </div>
