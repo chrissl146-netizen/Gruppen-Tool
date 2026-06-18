@@ -243,7 +243,7 @@
         .timer-container {
             display: flex;
             flex-direction: column;
-            align-items: center; /* Zentriert den Timer in der breiten Kachel */
+            align-items: center;
             width: 100%;
         }
 
@@ -263,14 +263,12 @@
         .timer-bg {
             fill: none;
             stroke: var(--border-color);
-            /* Strichstärke verdreifacht von 8 auf 24 */
             stroke-width: 24;
         }
 
         .timer-progress {
             fill: none;
             stroke: var(--primary);
-            /* Strichstärke verdreifacht von 8 auf 24 */
             stroke-width: 24;
             stroke-linecap: round;
             stroke-dasharray: 565.48; 
@@ -362,8 +360,7 @@
             height: 250px;
             margin: 0 auto;
         }
-        
-        /* Im Vollbild ebenfalls die Breite der Timer-Linie anpassen */
+
         #fullscreenArea:fullscreen .timer-bg,
         #fullscreenArea:fullscreen .timer-progress {
             stroke-width: 24;
@@ -392,9 +389,8 @@
             margin-bottom: 16px;
         }
 
-        /* Neue Klasse für die volle Breite des Timers unten */
         .full-width-card {
-            grid-column: 1 / -1; /* Nimmt die gesamte Breite des Grids ein */
+            grid-column: 1 / -1;
         }
 
     </style>
@@ -509,8 +505,7 @@
 
             </div>
         </div>
-        
-        <!-- Phasentimer als separate Kachel über die gesamte Breite ganz unten -->
+
         <div class="card no-print full-width-card" style="margin-bottom: 0;">
             <div class="card-title">Phasentimer</div>
             <div class="timer-container">
@@ -963,19 +958,39 @@
     let remainingSeconds = 0;
     let isRunning = false;
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let audioCtx = null;
+
     function playBeep() {
-        if(audioCtx.state === 'suspended') audioCtx.resume();
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); 
-        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 1);
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        
+        const now = audioCtx.currentTime;
+        
+        const oscillator1 = audioCtx.createOscillator();
+        const gainNode1 = audioCtx.createGain();
+        oscillator1.type = 'sine';
+        oscillator1.frequency.setValueAtTime(660, now); 
+        gainNode1.gain.setValueAtTime(0.4, now);
+        gainNode1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        oscillator1.connect(gainNode1);
+        gainNode1.connect(audioCtx.destination);
+        oscillator1.start(now);
+        oscillator1.stop(now + 0.3);
+        
+        const oscillator2 = audioCtx.createOscillator();
+        const gainNode2 = audioCtx.createGain();
+        oscillator2.type = 'sine';
+        oscillator2.frequency.setValueAtTime(880, now + 0.15); 
+        gainNode2.gain.setValueAtTime(0.4, now + 0.15);
+        gainNode2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+        oscillator2.connect(gainNode2);
+        gainNode2.connect(audioCtx.destination);
+        oscillator2.start(now + 0.15);
+        oscillator2.stop(now + 0.5);
     }
 
     function updateTimerUI() {
@@ -1012,6 +1027,13 @@
     window.startTimer = function() {
         if(isRunning) return;
         
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        
         if(remainingSeconds === 0) {
             const min = parseInt(timerMinutesInput.value) || 5;
             totalSeconds = min * 60;
@@ -1028,7 +1050,7 @@
             } else {
                 pauseTimer();
                 playBeep();
-                setTimeout(playBeep, 1000); 
+                setTimeout(playBeep, 1200); 
             }
         }, 1000);
         updateTimerUI();
