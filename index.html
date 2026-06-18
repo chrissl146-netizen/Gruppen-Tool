@@ -243,7 +243,8 @@
         .timer-container {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: center; /* Zentriert den Timer in der breiten Kachel */
+            width: 100%;
         }
 
         .timer-circle {
@@ -262,13 +263,15 @@
         .timer-bg {
             fill: none;
             stroke: var(--border-color);
-            stroke-width: 8;
+            /* Strichstärke verdreifacht von 8 auf 24 */
+            stroke-width: 24;
         }
 
         .timer-progress {
             fill: none;
             stroke: var(--primary);
-            stroke-width: 8;
+            /* Strichstärke verdreifacht von 8 auf 24 */
+            stroke-width: 24;
             stroke-linecap: round;
             stroke-dasharray: 565.48; 
             stroke-dashoffset: 0;
@@ -359,6 +362,12 @@
             height: 250px;
             margin: 0 auto;
         }
+        
+        /* Im Vollbild ebenfalls die Breite der Timer-Linie anpassen */
+        #fullscreenArea:fullscreen .timer-bg,
+        #fullscreenArea:fullscreen .timer-progress {
+            stroke-width: 24;
+        }
 
         #fullscreenArea:fullscreen .groups-container {
             flex-grow: 1;
@@ -381,6 +390,11 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
+        }
+
+        /* Neue Klasse für die volle Breite des Timers unten */
+        .full-width-card {
+            grid-column: 1 / -1; /* Nimmt die gesamte Breite des Grids ein */
         }
 
     </style>
@@ -447,27 +461,6 @@
         <div class="right-col">
             
             <div class="card no-print">
-                <div class="card-title">Phasentimer</div>
-                <div class="timer-container">
-                    <div class="timer-circle">
-                        <svg class="timer-svg" viewBox="0 0 200 200">
-                            <circle class="timer-bg" cx="100" cy="100" r="90"></circle>
-                            <circle class="timer-progress" id="timerRing" cx="100" cy="100" r="90"></circle>
-                        </svg>
-                        <div class="timer-text" id="timerDisplay">05:00</div>
-                    </div>
-                    <div class="flex-row">
-                        <input type="number" id="timerMinutes" value="5" min="1" max="90" style="width: 70px;"> min
-                    </div>
-                    <div class="flex-row" style="margin-top: 12px;">
-                        <button class="btn btn-primary" onclick="startTimer()">Start</button>
-                        <button class="btn btn-secondary" onclick="pauseTimer()">Pause</button>
-                        <button class="btn btn-danger" onclick="resetTimer()">Reset</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card no-print">
                 <div class="card-title">Gruppeneinstellungen</div>
                 <div class="form-group">
                     <label>Modus</label>
@@ -516,6 +509,29 @@
 
             </div>
         </div>
+        
+        <!-- Phasentimer als separate Kachel über die gesamte Breite ganz unten -->
+        <div class="card no-print full-width-card" style="margin-bottom: 0;">
+            <div class="card-title">Phasentimer</div>
+            <div class="timer-container">
+                <div class="timer-circle">
+                    <svg class="timer-svg" viewBox="0 0 200 200">
+                        <circle class="timer-bg" cx="100" cy="100" r="90"></circle>
+                        <circle class="timer-progress" id="timerRing" cx="100" cy="100" r="90"></circle>
+                    </svg>
+                    <div class="timer-text" id="timerDisplay">05:00</div>
+                </div>
+                <div class="flex-row">
+                    <input type="number" id="timerMinutes" value="5" min="1" max="90" style="width: 70px;"> min
+                </div>
+                <div class="flex-row" style="margin-top: 12px;">
+                    <button class="btn btn-primary" onclick="startTimer()">Start</button>
+                    <button class="btn btn-secondary" onclick="pauseTimer()">Pause</button>
+                    <button class="btn btn-danger" onclick="resetTimer()">Reset</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -672,7 +688,6 @@
         
         renderStudentList();
         renderClassTabBar();
-        
         groupsOutput.innerHTML = '<div style="color: var(--text-muted); padding: 20px;">Klasse geladen. Bereit zum Würfeln.</div>';
         resetTimer();
     }
